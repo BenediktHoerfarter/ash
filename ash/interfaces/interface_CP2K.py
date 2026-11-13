@@ -52,6 +52,7 @@ class CP2KTheory:
                 method='QUICKSTEP', numcores=1, parallelization='OMP', mixed_mpi_procs=None, mixed_omp_threads=None,
                 center_coords=False, scf_maxiter=50, outer_scf_maxiter=10, scf_convergence=1e-6, eps_default=1e-10,
                 coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
+                spherical_cutoff1=None, spherical_cutoff2=None,
                 OT=True, OT_minimizer='DIIS', OT_preconditioner='FULL_ALL',
                 OT_linesearch='3PNT', outer_SCF=True, outer_SCF_optimizer='SD', OT_energy_gap=0.08,
                 path_to_gauxc_model=None):
@@ -253,6 +254,12 @@ class CP2KTheory:
         self.GEEP_num_gauss=GEEP_num_gauss
         self.MM_radius_scaling=MM_radius_scaling #Scale the MM radii by this factor
         self.mm_radii=mm_radii #Optional dictionary of MM radii for GEEP. If not provided then element_radii_for_cp2k
+        self.spherical_cutoff1=spherical_cutoff1
+        self.spherical_cutoff2=spherical_cutoff2
+        if self.spherical_cutoff1 is None and self.spherical_cutoff2 is not None:
+            self.spherical_cutoff1=-5.29177209e-1
+        if self.spherical_cutoff2 is None and self.spherical_cutoff1 is not None:
+            self.spherical_cutoff2=0.0e0
 
         print("CP2KTheory settings:\n")
         print("")
@@ -462,6 +469,7 @@ class CP2KTheory:
                              potential_file=self.potential_file, periodic_type=self.periodic_type,
                              psolver=self.psolver, coupling=self.coupling, GEEP_num_gauss=self.GEEP_num_gauss,
                              MM_radius_scaling=self.MM_radius_scaling, mm_radii=self.mm_radii,
+                             spherical_cutoff1=self.spherical_cutoff1, spherical_cutoff2=self.spherical_cutoff2, 
                              qm_kind_dict=qm_kind_dict, mm_kind_list=mm_kind_list,
                              scf_convergence=self.scf_convergence, eps_default=self.eps_default,
                              scf_maxiter=self.scf_maxiter, outer_scf_maxiter=self.outer_scf_maxiter,
@@ -644,6 +652,7 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
                     basis_file='BASIS', potential_file='POTENTIAL',
                     psolver='wavelet', wavelet_scf_type=40,
                     ngrids=4, xc_finer_grid=False, cutoff=250, rel_cutoff=60,
+                    spherical_cutoff1=None, spherical_cutoff2=None,
                     coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
                     qm_kind_dict=None, mm_kind_list=None,
                     mm_ewald_type='NONE', mm_ewald_alpha=0.35, mm_ewald_gmax="21 21 21", printlevel=2,
@@ -847,6 +856,8 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
             #QM/MM
             inpfile.write(f'    &QMMM\n')
             inpfile.write(f'      ECOUPL {coupling}\n')
+            if spherical_cutoff1 is not None and spherical_cutoff2 is not None:
+                inpfile.write(f'      SPHERICAL_CUTOFF {spherical_cutoff1} {spherical_cutoff2}\n')
             if coupling == 'GAUSS':
                 inpfile.write(f'      USE_GEEP_LIB {GEEP_num_gauss}\n')
                 #Unclear whether useful or not
