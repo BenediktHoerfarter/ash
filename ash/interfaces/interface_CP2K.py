@@ -50,7 +50,7 @@ class CP2KTheory:
                 cutoff=250, rel_cutoff=60,
                 kpoint_settings=None, 
                 method='QUICKSTEP', numcores=1, parallelization='OMP', mixed_mpi_procs=None, mixed_omp_threads=None,
-                center_coords=False, scf_maxiter=50, outer_scf_maxiter=10, scf_convergence=1e-6, eps_default=1e-10,
+                center_coords=False, scf_maxiter=50, outer_scf_maxiter=10, scf_convergence=1e-6, eps_default=1e-10, tblite_mixer_iterations=250,
                 coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
                 spherical_cutoff1=None, spherical_cutoff2=None,
                 OT=True, OT_minimizer='DIIS', OT_preconditioner='FULL_ALL',
@@ -208,6 +208,7 @@ class CP2KTheory:
         self.qm_periodic_type=qm_periodic_type
         self.xtb_type=xtb_type # xTB method to use. Options: 'GFN2', 'GFN1', 'GFN0'
         self.xtb_tblite=xtb_tblite # Boolean, whether to use the tblite-library version of xTB
+        self.tblite_mixer_iterations=tblite_mixer_iterations
         # self.cell_length=cell_length #Total cell length (full system including MM if QM/MM)
         self.cell_dimensions=cell_dimensions #Cell dimensions. For full system
         self.cell_vectors=cell_vectors #Cell vectors. For full system
@@ -471,7 +472,7 @@ class CP2KTheory:
                              MM_radius_scaling=self.MM_radius_scaling, mm_radii=self.mm_radii,
                              spherical_cutoff1=self.spherical_cutoff1, spherical_cutoff2=self.spherical_cutoff2, 
                              qm_kind_dict=qm_kind_dict, mm_kind_list=mm_kind_list,
-                             scf_convergence=self.scf_convergence, eps_default=self.eps_default,
+                             scf_convergence=self.scf_convergence, eps_default=self.eps_default, tblite_mixer_iterations=self.tblite_mixer_iterations,
                              scf_maxiter=self.scf_maxiter, outer_scf_maxiter=self.outer_scf_maxiter,
                              ngrids=self.ngrids, xc_finer_grid=self.xc_finer_grid, cutoff=self.cutoff, rel_cutoff=self.rel_cutoff, printlevel=self.printlevel,
                              OT=self.OT, OT_minimizer=self.OT_minimizer, OT_preconditioner=self.OT_preconditioner, OT_linesearch=self.OT_linesearch,
@@ -643,7 +644,7 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
                     coordfile=None, user_input_dft=None,
                     charge=None, mult=None, basis_method='GAPW',
                     mgrid_commensurate=False, scf_maxiter=50, outer_scf_maxiter=10,
-                    scf_guess='RESTART', scf_convergence=1e-6, eps_default=1e-10,
+                    scf_guess='RESTART', scf_convergence=1e-6, eps_default=1e-10, tblite_mixer_iterations=250,
                     periodic_type="XYZ", cell_vectors=None,
                     stress_tensor=False, stress_tensor_algo='DIAGONAL_ANALYTICAL',
                     kpoint_settings=None,
@@ -769,6 +770,9 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
                     inpfile.write(f'          GFN_TYPE  TBLITE\n') #NOTE
                     inpfile.write(f'          &TBLITE\n')
                     inpfile.write(f'            METHOD {xtb_type}\n')
+                    inpfile.write(f'          &END\n')
+                    inpfile.write(f'          &TBLITE_MIXER\n')
+                    inpfile.write(f'            ITERATIONS {tblite_mixer_iterations}\n')
                     inpfile.write(f'          &END\n')
                 else:
                     inpfile.write(f'          GFN_TYPE  {xtbcode}\n') #NOTE
