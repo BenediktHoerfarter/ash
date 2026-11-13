@@ -51,7 +51,7 @@ class CP2KTheory:
                 kpoint_settings=None, 
                 method='QUICKSTEP', numcores=1, parallelization='OMP', mixed_mpi_procs=None, mixed_omp_threads=None,
                 center_coords=False, scf_maxiter=50, outer_scf_maxiter=10, scf_convergence=1e-6, eps_default=1e-10, tblite_mixer_iterations=250,
-                coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
+                QMMM_centering='EVERY_STEP', coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
                 spherical_cutoff1=None, spherical_cutoff2=None,
                 OT=True, OT_minimizer='DIIS', OT_preconditioner='FULL_ALL',
                 OT_linesearch='3PNT', outer_SCF=True, outer_SCF_optimizer='SD', OT_energy_gap=0.08,
@@ -251,6 +251,7 @@ class CP2KTheory:
         self.kpoint_settings=kpoint_settings
 
         #QM/MM
+        self.QMMM_centering=QMMM_centering
         self.coupling=coupling
         self.GEEP_num_gauss=GEEP_num_gauss
         self.MM_radius_scaling=MM_radius_scaling #Scale the MM radii by this factor
@@ -468,7 +469,7 @@ class CP2KTheory:
                              xtb_periodic=self.xtb_periodic, xtb_type=self.xtb_type, xtb_tblite=self.xtb_tblite,
                              basis_file=self.basis_file,
                              potential_file=self.potential_file, periodic_type=self.periodic_type,
-                             psolver=self.psolver, coupling=self.coupling, GEEP_num_gauss=self.GEEP_num_gauss,
+                             psolver=self.psolver, QMMM_centering=self.QMMM_centering, coupling=self.coupling, GEEP_num_gauss=self.GEEP_num_gauss,
                              MM_radius_scaling=self.MM_radius_scaling, mm_radii=self.mm_radii,
                              spherical_cutoff1=self.spherical_cutoff1, spherical_cutoff2=self.spherical_cutoff2, 
                              qm_kind_dict=qm_kind_dict, mm_kind_list=mm_kind_list,
@@ -654,7 +655,7 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
                     psolver='wavelet', wavelet_scf_type=40,
                     ngrids=4, xc_finer_grid=False, cutoff=250, rel_cutoff=60,
                     spherical_cutoff1=None, spherical_cutoff2=None,
-                    coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
+                    QMMM_centering='EVERY_STEP', coupling='GAUSSIAN', GEEP_num_gauss=6, MM_radius_scaling=1, mm_radii=None,
                     qm_kind_dict=None, mm_kind_list=None,
                     mm_ewald_type='NONE', mm_ewald_alpha=0.35, mm_ewald_gmax="21 21 21", printlevel=2,
                     OT=False, OT_minimizer='DIIS', OT_preconditioner='FULL_ALL', OT_linesearch='3PNT',
@@ -859,6 +860,7 @@ def write_CP2K_input(method='QUICKSTEP', jobname='ash-CP2K', center_coords=True,
             inpfile.write(f'    &END MM\n')
             #QM/MM
             inpfile.write(f'    &QMMM\n')
+            inpfile.write(f'      CENTER {QMMM_centering}\n')
             inpfile.write(f'      ECOUPL {coupling}\n')
             if spherical_cutoff1 is not None and spherical_cutoff2 is not None:
                 inpfile.write(f'      SPHERICAL_CUTOFF {spherical_cutoff1} {spherical_cutoff2}\n')
