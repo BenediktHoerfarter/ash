@@ -432,11 +432,12 @@ class CP2KTheory:
             #print_time_rel(module_init_time, modulename=f'CP2K run-prep3b', moduleindex=2)
             #Telling CP2K which atoms are QM
             #Dictionary with QM-atom indices (for full system), grouped by element
-            qm_kind_dict={}
+            self.qm_kind_dict={}
             for el in set(qm_elems):
                 #CP2K starts counting from 1
-                qm_kind_dict[el]= [i+1 for i, x in enumerate(qm_elems) if x == el]
-            print("qm_kind_dict:",qm_kind_dict)
+                self.qm_kind_dict[el]= [i+1 for i, x in enumerate(qm_elems) if x == el]
+            self.qm_kind_dict = dict(sorted(self.qm_kind_dict.items()))
+            print("qm_kind_dict:",self.qm_kind_dict)
             #MM-kind list
             #NOTE: This controls Gaussian radii for GEEP. Currently using same parameters for element
             #Could be made more flexible
@@ -472,7 +473,7 @@ class CP2KTheory:
                              psolver=self.psolver, QMMM_centering=self.QMMM_centering, coupling=self.coupling, GEEP_num_gauss=self.GEEP_num_gauss,
                              MM_radius_scaling=self.MM_radius_scaling, mm_radii=self.mm_radii,
                              spherical_cutoff1=self.spherical_cutoff1, spherical_cutoff2=self.spherical_cutoff2, 
-                             qm_kind_dict=qm_kind_dict, mm_kind_list=mm_kind_list,
+                             qm_kind_dict=self.qm_kind_dict, mm_kind_list=mm_kind_list,
                              scf_convergence=self.scf_convergence, eps_default=self.eps_default, tblite_mixer_iterations=self.tblite_mixer_iterations,
                              scf_maxiter=self.scf_maxiter, outer_scf_maxiter=self.outer_scf_maxiter,
                              ngrids=self.ngrids, xc_finer_grid=self.xc_finer_grid, cutoff=self.cutoff, rel_cutoff=self.rel_cutoff, printlevel=self.printlevel,
